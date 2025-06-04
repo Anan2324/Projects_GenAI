@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VertexAI LLM Chatbot</title>
+  <title>VertexAI Chatbot</title>
   <style>
     body {
+      background-color: #d4d3db;
       font-family: Arial, sans-serif;
-      background-color: rgb(205, 204, 211);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -17,40 +17,39 @@
 
     .chat-container {
       background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      width: 80%;
-      max-width: 600px;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
       padding: 20px;
+      width: 600px;
     }
 
-    .header {
+    .chat-title {
       background-color: #0b041e;
-      color: #fff;
-      padding: 15px;
-      border-radius: 10px;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      padding: 1rem;
+      border-radius: 10px 10px 0 0;
       text-align: center;
-      font-size: 20px;
-      margin-bottom: 20px;
+      margin: -20px -20px 20px -20px;
     }
 
     form {
       display: flex;
-      justify-content: space-between;
       gap: 10px;
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
 
     input[type="text"] {
-      flex-grow: 1;
+      flex: 1;
       padding: 10px;
-      border-radius: 5px;
       border: 1px solid #ccc;
+      border-radius: 5px;
     }
 
     button {
       padding: 10px 15px;
-      background-color: rgb(13, 2, 28);
+      background-color: #0b041e;
       color: white;
       border: none;
       border-radius: 5px;
@@ -58,42 +57,43 @@
     }
 
     button:hover {
-      background-color: #11114b;
+      background-color: #1a1a55;
     }
 
     #result {
       border: 1px solid #ccc;
-      border-radius: 5px;
-      padding: 15px;
+      border-radius: 8px;
+      padding: 1rem;
       background-color: #f8f8f8;
       min-height: 100px;
-      overflow-wrap: break-word;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
 
   <div class="chat-container">
-    <div class="header">VertexAI LLM Powered Chatbot</div>
+    <div class="chat-title">VertexAI LLM Powered Chatbot</div>
 
-    <!-- ✅ Correct Form -->
+    <!-- ✅ Form: this was missing in your screenshot -->
     <form id="chat-form">
       <input type="text" id="user-input" name="user_input" placeholder="Your query..." required />
-      <button type="submit" id="submitBtn">Send</button>
+      <button type="submit">Send</button>
     </form>
 
+    <!-- ✅ Output area -->
     <div id="result"></div>
   </div>
 
-  <!-- ✅ Single clean JS script -->
+  <!-- ✅ JavaScript to send query to Flask backend -->
   <script>
-    document.getElementById("chat-form").addEventListener("submit", async function (event) {
-      event.preventDefault();
+    document.getElementById("chat-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
 
-      const input = document.getElementById("user-input").value;
-      const resultBox = document.getElementById("result");
+      const userInput = document.getElementById("user-input").value;
+      const resultDiv = document.getElementById("result");
 
-      resultBox.innerHTML = "<em>Thinking...</em>";
+      resultDiv.innerHTML = "<em>Loading response...</em>";
 
       try {
         const response = await fetch("/gemini", {
@@ -101,17 +101,18 @@
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
           },
-          body: new URLSearchParams({ user_input: input }),
+          body: new URLSearchParams({ user_input: userInput }),
         });
 
         const data = await response.json();
-        resultBox.innerHTML = `<strong>Gemini:</strong> ${data.content}`;
-      } catch (error) {
-        resultBox.innerHTML = "❌ Error connecting to backend.";
-        console.error("Fetch error:", error);
+        resultDiv.innerHTML = `<strong>Gemini:</strong> ${data.content}`;
+      } catch (err) {
+        resultDiv.innerHTML = "❌ Something went wrong. Check console.";
+        console.error("Error:", err);
       }
     });
   </script>
 
 </body>
 </html>
+
