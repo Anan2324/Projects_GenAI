@@ -2,21 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chatbot</title>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
- 
-
+  <title>VertexAI LLM Chatbot</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: rgb(205, 204, 211);
-      margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      margin: 0;
     }
 
     .chat-container {
@@ -25,111 +21,97 @@
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       width: 80%;
       max-width: 600px;
-      overflow: hidden;
+      padding: 20px;
     }
 
     .header {
       background-color: #0b041e;
       color: #fff;
-      padding: 20px;
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
+      padding: 15px;
+      border-radius: 10px;
       text-align: center;
-      margin: 0;
+      font-size: 20px;
+      margin-bottom: 20px;
     }
 
-    .chat-form {
+    form {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding: 0 20px;
+      gap: 10px;
+      margin-bottom: 15px;
     }
 
-    #user-input {
+    input[type="text"] {
       flex-grow: 1;
-      border: 1px solid #ccc;
-      border-radius: 5px;
       padding: 10px;
-      margin-right: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
 
-    #submitBtn {
+    button {
+      padding: 10px 15px;
       background-color: rgb(13, 2, 28);
       color: white;
       border: none;
       border-radius: 5px;
-      padding: 10px 15px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
     }
 
-    #submitBtn:hover {
+    button:hover {
       background-color: #11114b;
     }
 
     #result {
       border: 1px solid #ccc;
       border-radius: 5px;
-      padding: 20px;
+      padding: 15px;
       background-color: #f8f8f8;
       min-height: 100px;
       overflow-wrap: break-word;
-      margin: 0 20px 20px;
     }
   </style>
 </head>
 <body>
 
   <div class="chat-container">
-    <h1 class="header">Vertexai LLM Powered Chatbot</h1>
-    
-   <script>
-  const form = document.getElementById("chat-form");
-  const input = document.getElementById("user-input");
+    <div class="header">VertexAI LLM Powered Chatbot</div>
 
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    const response = await fetch("/gemini", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams({ user_input: input.value }),
-    });
-
-    const data = await response.json();
-    console.log(data.content);  // replace with rendering to page
-  });
-</script>
+    <!-- ✅ Correct Form -->
+    <form id="chat-form">
+      <input type="text" id="user-input" name="user_input" placeholder="Your query..." required />
+      <button type="submit" id="submitBtn">Send</button>
+    </form>
 
     <div id="result"></div>
   </div>
 
+  <!-- ✅ Single clean JS script -->
   <script>
-    window.onload = function () {
-      document
-        .getElementById("chat-form")
-        .addEventListener("submit", function (event) {
-          // Prevent the form from submitting and refreshing the page
-          event.preventDefault();
+    document.getElementById("chat-form").addEventListener("submit", async function (event) {
+      event.preventDefault();
 
-          let userInput = document.getElementById("user-input").value;
-          let url = `/gemini?user_input=${encodeURIComponent(userInput)}`;
+      const input = document.getElementById("user-input").value;
+      const resultBox = document.getElementById("result");
 
-          fetch(url)
-            .then((response) => response.json())
-            .then((data) => {
-              let content = data.content;
-              let resultDiv = document.getElementById("result");
-              resultDiv.innerHTML = content;
-            })
-            .catch((error) => {
-              console.error("Error fetching gemini response:", error);
-            });
+      resultBox.innerHTML = "<em>Thinking...</em>";
+
+      try {
+        const response = await fetch("/gemini", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams({ user_input: input }),
         });
-    };
+
+        const data = await response.json();
+        resultBox.innerHTML = `<strong>Gemini:</strong> ${data.content}`;
+      } catch (error) {
+        resultBox.innerHTML = "❌ Error connecting to backend.";
+        console.error("Fetch error:", error);
+      }
+    });
   </script>
+
 </body>
 </html>
