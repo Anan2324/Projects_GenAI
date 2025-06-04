@@ -1,57 +1,45 @@
 from flask import Flask, render_template, request, jsonify
+import openai
 import os
-from vertexai.preview.generative_models import GenerativeModel
 from dotenv import load_dotenv
-import vertexai
 
-# Load environment variables
 load_dotenv()
 
 app = Flask(__name__)
 
-# Load from .env
-project_id = os.getenv("project_id")
-region = os.getenv("region")
+# Load API key
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Check if keys exist
-if not project_id or not region:
-    raise ValueError("❌ project_id or region not set in .env")
-
-# Initialize VertexAI
-vertexai.init(project=project_id, location=region)
-
-# Load model
-model = GenerativeModel("gemini-1.0-pro")
-
-# Homepage route
 @app.route("/")
 def home():
     return render_template("index.html")
 
-# Chat endpoint
-@app.route('/gemini', methods=['POST'])
-def vertex_ai():
+@app.route("/gemini", methods=["POST"])  # we keep the same route
+def chat():
     try:
-        user_input = request.form.get('user_input')
-        print("📨 Input:", user_input)
+        user_input = request.form.get("user_input")
+        print("🧠 Prompt received:", user_input)
 
         if not user_input:
-            return jsonify(content="⚠️ Please enter a prompt.")
+            return jsonify(content="⚠️ Please enter a valid prompt.")
 
-        responses = model.generate_content(user_input, stream=True)
+        # Call ChatGPT API
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # or use "gpt-4" if your key supports it
+            messages=[
+                {"role": "user", "content": user_input}
+            ]
+        )
 
-        # Extract streamed output
-        res = [r.candidates[0].content.parts[0].text for r in responses]
-        final_res = "".join(res)
-
-        print("✅ Response:", final_res)
-        return jsonify(content=final_res)
+        reply = response["choices"][0]["message"]["content"]
+        print("✅ Response:", reply)
+        return jsonify(content=reply)
 
     except Exception as e:
-        print("❌ Error in backend:", e)
+        print("❌ Error:", e)
         return jsonify(content=f"❌ Error: {str(e)}")
 
-# Run app
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8080)
+if __name__ == "__main__":
+    app.run(debug=True, port=8080)
+
 
