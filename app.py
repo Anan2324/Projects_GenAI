@@ -25,22 +25,28 @@ def home():
 
 
 @app.route('/gemini', methods=['GET', 'POST'])
+
 def vertex_ai():
-    user_input  = ""
+    user_input = ""
+
     if request.method == 'GET':
         user_input = request.args.get('user_input')
-
     else:
-        user_input = request.form('user_input')
+        user_input = request.form.get('user_input')  # ✅ Fixed this line
 
+    if not user_input:
+        return jsonify(content="⚠️ Please enter a valid query.")
 
+    
     responses = model.generate_content(user_input, stream=True)
 
     res = [response.candidates[0].content.parts[0].text for response in responses]
-
     final_res = "".join(res)
-    print(final_res)
+
+    print("Generated response:", final_res)  # Optional debug output
+
     return jsonify(content=final_res)
+
 
 
 
